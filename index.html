@@ -1,161 +1,201 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <title>Antrian Tamu</title>
-  <style>
-    body { 
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-      background: #eff6ff; /* biru muda lembut */
-      margin: 0;
-      padding: 20px;
-      color: #1e3a8a;
-    }
-    h2 {
-      text-align: center; 
-      margin-bottom: 5px; 
-      font-size: 28px;
-      color: #1e40af; /* biru tua */
-      letter-spacing: 1px;
-    }
-    #datetime {
-      text-align: right; 
-      font-weight: 600; 
-      color: #1d4ed8; /* biru medium */
-      margin-bottom: 10px;
-      font-size: 16px;
-    }
-    .table-container {
-      background: #ffffff;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 6px 15px rgba(0,0,0,0.08);
-    }
-    table { 
-      border-collapse: collapse; 
-      width: 100%; 
-      margin-top: 10px;
-    }
-    th, td { 
-      padding: 12px 14px; 
-      text-align: left; 
-    }
-    th { 
-      background: #2563eb; /* biru utama */
-      color: white; 
-      font-weight: 600;
-      text-transform: uppercase;
-      font-size: 14px;
-      letter-spacing: 0.5px;
-    }
-    tr:nth-child(even) { background: #dbeafe; } /* biru muda */
-    tr:hover { background: #bfdbfe; transition: 0.3s; }
+<meta charset="UTF-8" />
+<title>Antrian Tamu Interaktif</title>
+<style>
+  body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    background: #eff6ff;
+    margin: 0;
+    padding: 20px;
+    color: #1e3a8a;
+  }
+  h2 {
+    text-align: center; 
+    margin-bottom: 5px; 
+    font-size: 28px;
+    color: #1e40af;
+    letter-spacing: 1px;
+  }
+  #datetime {
+    text-align: right; 
+    font-weight: 600; 
+    color: #1d4ed8;
+    margin-bottom: 10px;
+    font-size: 16px;
+  }
+  .table-container {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+  }
+  table { 
+    border-collapse: collapse; 
+    width: 100%; 
+    margin-top: 10px;
+  }
+  th, td { 
+    padding: 12px 14px; 
+    text-align: left; 
+  }
+  th { 
+    background: #2563eb;
+    color: white; 
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+  }
+  tr:nth-child(even) { background: #dbeafe; }
+  tr:hover { background: #bfdbfe; transition: 0.3s; }
 
-    /* animasi fade-in */
-    tr {
-      opacity: 0;
-      transform: translateY(10px);
-      animation: fadeIn 0.6s ease forwards;
-    }
-    @keyframes fadeIn {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
+  /* status */
+  .status {
+    font-weight: bold;
+    padding: 6px 10px;
+    border-radius: 8px;
+    display: inline-block;
+    text-align: center;
+    min-width: 90px;
+    transition: background 0.5s ease, color 0.5s ease;
+  }
+  .status-menunggu { background: #facc15; color: #1f2937; } 
+  .status-diproses { background: #38bdf8; color: #1e3a8a; } 
+  .status-selesai { background: #22c55e; color: white; } 
+  .status-batal { background: #ef4444; color: white; } 
 
-    /* highlight jika data baru */
-    tr.new-row { 
-      background: #93c5fd !important; 
-      transition: background 2s ease; 
-    }
-  </style>
+  .status-diproses span.icon {
+    display: inline-block;
+    animation: spin 1.2s linear infinite;
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* animasi baris baru: slide dari kanan + fade */
+  tr.new-row {
+    opacity: 0;
+    transform: translateX(50px);
+    animation: slideFadeIn 0.8s forwards;
+  }
+  @keyframes slideFadeIn {
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  /* highlight update */
+  tr.highlight-update {
+    background-color: #fef3c7 !important; 
+    transition: background 1.5s ease;
+  }
+</style>
 </head>
 <body>
-  <h2>DAFTAR ANTRIAN TAMU</h2>
-  <div id="datetime"></div>
+<h2>DAFTAR ANTRIAN TAMU</h2>
+<div id="datetime"></div>
 
-  <div class="table-container">
-    <table id="queueTable">
-      <thead>
-        <tr>
-          <th>Nomor Antrian</th>
-          <th>Nama Tamu</th>
-          <th>Keperluan</th>
-          <th>Perusahaan</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody id="queueBody">
-        <tr><td colspan="5" style="text-align:center; color:#6b7280;">Memuat data...</td></tr>
-      </tbody>
-    </table>
-  </div>
+<div class="table-container">
+  <table id="queueTable">
+    <thead>
+      <tr>
+        <th>Nomor Antrian</th>
+        <th>Nama Tamu</th>
+        <th>Keperluan</th>
+        <th>Perusahaan</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="queueBody">
+      <tr><td colspan="5" style="text-align:center; color:#6b7280;">Memuat data...</td></tr>
+    </tbody>
+  </table>
+</div>
 
-  <!-- Suara notifikasi bila ada data baru -->
-  <audio id="notifSound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
+<audio id="notifSound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
 
-  <script>
-    const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT2UNBBXzJ61Fr9rldXB-E7ULGIt5EOvG1EbNUFqVjpifHoYFaNHFCXJDxnNzL87MgsbLhJoDuYG64X/pub?output=csv";
-    let lastData = [];
+<script>
+const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT2UNBBXzJ61Fr9rldXB-E7ULGIt5EOvG1EbNUFqVjpifHoYFaNHFCXJDxnNzL87MgsbLhJoDuYG64X/pub?output=csv";
+let lastData = [];
 
-    // update jam realtime
-    function updateDateTime() {
-      const now = new Date();
-      const options = { 
-        weekday: "long", 
-        year: "numeric", 
-        month: "long", 
-        day: "numeric" 
-      };
-      const dateStr = now.toLocaleDateString("id-ID", options);
-      const timeStr = now.toLocaleTimeString("id-ID");
-      document.getElementById("datetime").textContent = dateStr + " | " + timeStr;
-    }
-    setInterval(updateDateTime, 1000);
-    updateDateTime();
+function updateDateTime() {
+  const now = new Date();
+  const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
+  const dateStr = now.toLocaleDateString("id-ID", options);
+  const timeStr = now.toLocaleTimeString("id-ID");
+  document.getElementById("datetime").textContent = dateStr + " | " + timeStr;
+}
+setInterval(updateDateTime, 1000);
+updateDateTime();
 
-    // ambil data dari Google Sheets
-    async function fetchData() {
-      try {
-        const res = await fetch(sheetUrl + "&t=" + Date.now()); // bypass cache
-        const text = await res.text();
-        const rows = text.trim().split("\n").map(r => r.split(",")).slice(1);
-        render(rows);
-      } catch (err) {
-        console.error("Gagal ambil data:", err);
+async function fetchData() {
+  try {
+    const res = await fetch(sheetUrl + "&t=" + Date.now());
+    const text = await res.text();
+    const rows = text.trim().split("\n").map(r => r.split(",")).slice(1);
+    render(rows);
+  } catch (err) {
+    console.error("Gagal ambil data:", err);
+  }
+}
+
+function getStatusIcon(status) {
+  const s = (status || "").toLowerCase();
+  if (s.includes("menunggu")) return "⏳";
+  if (s.includes("diproses")) return "🔄";
+  if (s.includes("selesai")) return "✅";
+  if (s.includes("batal")) return "❌";
+  return "ℹ️";
+}
+
+function render(data) {
+  const tbody = document.getElementById("queueBody");
+  const lastMap = new Map(lastData.map(d => [d[0], d]));
+
+  data.slice().reverse().forEach(row => {
+    let tr = tbody.querySelector(`tr[data-id='${row[0]}']`);
+    const statusText = (row[4] || "-").toLowerCase();
+    let statusClass = "status";
+    if (statusText.includes("menunggu")) statusClass += " status-menunggu";
+    else if (statusText.includes("diproses")) statusClass += " status-diproses";
+    else if (statusText.includes("selesai")) statusClass += " status-selesai";
+    else if (statusText.includes("batal")) statusClass += " status-batal";
+
+    const innerHTML = `
+      <td>${row[0] || "-"}</td>
+      <td>${row[1] || "-"}</td>
+      <td>${row[2] || "-"}</td>
+      <td>${row[3] || "-"}</td>
+      <td>
+        <span class="${statusClass}">
+          <span class="icon">${getStatusIcon(row[4])}</span> ${row[4] || "-"}
+        </span>
+      </td>
+    `;
+
+    if (tr) {
+      if (lastMap.get(row[0]).join() !== row.join()) {
+        tr.innerHTML = innerHTML;
+        tr.classList.add("highlight-update");
+        setTimeout(() => tr.classList.remove("highlight-update"), 1500);
       }
+    } else {
+      tr = document.createElement("tr");
+      tr.setAttribute("data-id", row[0]);
+      tr.innerHTML = innerHTML;
+      tr.classList.add("new-row");
+      tbody.prepend(tr);
+      document.getElementById("notifSound").play();
+      setTimeout(() => tr.classList.remove("new-row"), 800);
     }
+  });
 
-    // render tabel
-    function render(data) {
-      const tbody = document.getElementById("queueBody");
-      tbody.innerHTML = "";
+  lastData = data;
+}
 
-      const newEntries = data.filter(d => !lastData.some(ld => ld[0] === d[0]));
-
-      data.slice().reverse().forEach(row => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${row[0] || "-"}</td>
-          <td>${row[1] || "-"}</td>
-          <td>${row[2] || "-"}</td>
-          <td>${row[3] || "-"}</td>
-          <td>${row[4] || "-"}</td>
-        `;
-        if (newEntries.some(ne => ne[0] === row[0])) {
-          tr.classList.add("new-row");
-          document.getElementById("notifSound").play();
-        }
-        tbody.appendChild(tr);
-      });
-
-      lastData = data;
-    }
-
-    // refresh tiap 1 detik
-    setInterval(fetchData, 1000);
-    fetchData();
-  </script>
+setInterval(fetchData, 1000);
+fetchData();
+</script>
 </body>
 </html>
