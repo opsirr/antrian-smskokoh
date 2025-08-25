@@ -105,10 +105,12 @@
         <th>Keperluan</th>
         <th>Perusahaan</th>
         <th>Status</th>
+        <th>Waktu Daftar</th>
+        <th>Petugas</th>
       </tr>
     </thead>
     <tbody id="queueBody">
-      <tr><td colspan="5" style="text-align:center; color:#6b7280;">Memuat data...</td></tr>
+      <tr><td colspan="7" style="text-align:center; color:#6b7280;">Memuat data...</td></tr>
     </tbody>
   </table>
 </div>
@@ -153,7 +155,7 @@ function render(data) {
   const tbody = document.getElementById("queueBody");
   const lastMap = new Map(lastData.map(d => [d[0], d]));
 
-  data.slice().reverse().forEach(row => {
+  data.forEach(row => {
     let tr = tbody.querySelector(`tr[data-id='${row[0]}']`);
     const statusText = (row[4] || "-").toLowerCase();
     let statusClass = "status";
@@ -185,7 +187,7 @@ function render(data) {
       tr.setAttribute("data-id", row[0]);
       tr.innerHTML = innerHTML;
       tr.classList.add("new-row");
-      tbody.prepend(tr);
+      tbody.prepend(tr); // selalu tampil di atas
       document.getElementById("notifSound").play();
       setTimeout(() => tr.classList.remove("new-row"), 800);
     }
